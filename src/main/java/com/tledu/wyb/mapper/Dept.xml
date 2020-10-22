@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tledu.wyb.dao.IDeptDao">
+	<select id="loadByname" parameterType="java.lang.String"
+		resultType="Dept">
+		select * from t_dept where name=#{name}
+	</select>
+	<select id="list" resultType="Dept">
+		select * from t_dept
+	</select>
+	<delete id="delete" parameterType="int">
+		delete from t_dept where
+		id = #{id}
+	</delete>
+	<insert id="add" parameterType="Dept">
+		insert into t_dept (name,`desc`) values (#{name},#{desc})
+	</insert>
+	<select id="load" resultType="Dept" parameterType="int">
+		select * from t_dept where id = #{id};
+	</select>
+	<update id="update" parameterType="Dept">
+		update t_dept set name=#{name},`desc`=#{desc} where id = #{id};
+	</update>
+	
+</mapper>

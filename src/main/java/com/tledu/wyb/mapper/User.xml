@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tledu.wyb.dao.IUserDao">
+	<select id="loadByUsername" parameterType="java.lang.String"
+		resultType="User">
+		select * from t_user where username=#{username}
+	</select>
+	<select id="list" resultType="User">
+		select * from t_user
+	</select>
+	<delete id="delete" parameterType="int">
+		delete from t_user where
+		id = #{id}
+	</delete>
+	<insert id="add" parameterType="User">
+		insert into t_user (username,password,nickname,age,sex,dept_id) values (#{username},#{password},#{nickname},#{age},#{sex},#{dept.id})
+	</insert>
+	<select id="load" resultType="User" parameterType="int">
+		select * from t_user where id = #{id};
+	</select>
+	<update id="update" parameterType="User">
+		update t_user set username=#{username},password=#{password},nickname=#{nickname},age=#{age},sex=#{sex},dept_id=#{dept.id} where id = #{id};
+	</update>
+	<select id="loadByDeptId" parameterType="int" resultType="int">
+		select count(*) from t_user where dept_id = #{deptId}
+	</select>
+	<select id="list1" parameterType="java.lang.String" resultType="User">
+		select * from t_user where username like #{username}
+	</select>
+</mapper>

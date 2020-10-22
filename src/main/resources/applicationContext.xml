@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+          http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        		http://www.springframework.org/schema/mvc 
+        		http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd">
+	<!-- 引入事务约束 -->
+
+	<!-- 注解实例化 -->
+	<context:component-scan base-package="com.tledu.wyb" />
+	<!-- 注解注入 -->
+	<context:annotation-config />
+
+	<!-- 开启注解方式映射 -->
+	<mvc:annotation-driven />
+
+	<!-- 设置静态资源文件 -->
+	<!-- 当路径中包含resources的时候,就去resources下找对应的资源 -->
+	<mvc:resources location="/resources/" mapping="/resources/**"></mvc:resources>
+
+	<!-- 拦截器配置 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<!-- /** 是拦截所有请求 admin/** 是拦截admin相关的所有请求 -->
+			<mvc:mapping path="/**" />
+			<!-- 放行resources相关的请求 -->
+			<mvc:exclude-mapping path="/resources/**" />
+			<!-- 放行所有的css文件 -->
+			<!-- <mvc:exclude-mapping path="/**/*.css"/> -->
+			<!-- 拦截器类 -->
+			<bean class="com.tledu.wyb.filter.AuthInterceptor"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- 加载jdbc配置文件 -->
+	<!-- classpath: 也可以不加,加上之后就会去src下找 -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+
+	<!-- 配置数据库链接池 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+		<property name="driverClassName" value="${driver}" />
+		<property name="url" value="${url}" />
+		<property name="username" value="${user}" />
+		<property name="password" value="${password}" />
+	</bean>
+
+	<!-- sqlSessionFactory配置 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+	</bean>
+
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 配置通知 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<!-- 全部设置只读 -->
+			<tx:method name="*" read-only="true" propagation="REQUIRED" />
+			<tx:method name="add*" read-only="false" propagation="REQUIRED" />
+			<tx:method name="delete*" read-only="false" propagation="REQUIRED" />
+			<tx:method name="update*" read-only="false" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- aop切入 -->
+	<aop:config>
+		<aop:pointcut expression="execution(public * com.tledu.wyb.service..*.*(..))"
+			id="pointcut" />
+		<!-- 配置切面 -->
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut" />
+	</aop:config>
+	<!-- 文件上传 -->
+	<bean
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+		id="multipartResolver">
+		<property name="maxUploadSize" value="500000000"></property>
+	</bean>
+	<!-- 配置视图解析器 -->
+	<bean
+		class=" org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 前缀 -->
+		<property name="prefix" value="/WEB-INF/jsp/"></property>
+		<!-- 后缀 -->
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+	<!-- 配置全局异常 -->
+	<bean
+		class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<props>
+				<!-- 当捕捉到UserException异常之后,跳转到error页面 -->
+				<prop key="com.tledu.wyb.exception.SSMException">error</prop>
+			</props>
+		</property>
+	</bean>
+
+</beans>
